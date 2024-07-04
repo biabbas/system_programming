@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
     fd = socket(AF_INET, SOCK_STREAM, 0);
     fcntl(fd, F_SETFL, O_NONBLOCK); // setup non blocking socket
 
-    printf("result of connect : %d, errno = %d\n",connect_with_timeout(fd, (struct sockaddr *)&addr_s, sizeof(addr_s), 5000),errno);
+    printf("result of connect : %d, OS_msg = %s\n",connect_with_timeout(fd, (struct sockaddr *)&addr_s, sizeof(addr_s), 5000),strerror(errno));
    
 
     close(fd);
