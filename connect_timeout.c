@@ -41,11 +41,12 @@ int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addr
                     // Wait for connect to complete (or for the timeout deadline)
                     struct pollfd pfds[] = { { .fd = sockfd, .events = POLLOUT } };
                     rc = poll(pfds, 1, ms_until_deadline);
-                    printf("Poll results: fd %d, events: %d, revents: %d\n",pfds[0].fd,pfds[0].events,pfds[0].revents);
+                    printf("Poll call return: %d\nPoll results: fd %d, events: %d, revents: %d\n",rc,pfds[0].fd,pfds[0].events,pfds[0].revents);
                     // If poll 'succeeded', make sure it *really* succeeded
                     if(rc>0) {
                         int error = 0; socklen_t len = sizeof(error);
                         int retval = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len);
+                        printf("error no : %d, retval = %d\n",error,retval);
                         if(retval==0) errno = error;
                         if(error!=0) rc=-1;
                     }
@@ -54,6 +55,7 @@ int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addr
                 while(rc==-1 && errno==EINTR);
                 // Did poll timeout? If so, fail.
                 if(rc==0) {
+                    printf("Warning: Poll Timed out\n");
                     errno = ETIMEDOUT;
                     rc=-1;
                 }
@@ -65,7 +67,13 @@ int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addr
     // Success
     return rc;
 }
-
+char* interpret_result(int retval){
+    if (retval == -1 ){
+        return "Unsuccessful connection";
+    }
+    else
+        return "Successful connections";
+}
 int main(int argc, char **argv) {
     struct sockaddr_in addr_s;
     char *addr;
@@ -97,7 +105,7 @@ int main(int argc, char **argv) {
     fd = socket(AF_INET, SOCK_STREAM, 0);
     fcntl(fd, F_SETFL, O_NONBLOCK); // setup non blocking socket
 
-    printf("result of connect : %d, OS_msg = %s\n",connect_with_timeout(fd, (struct sockaddr *)&addr_s, sizeof(addr_s), 5000),strerror(errno));
+    printf("result of connect : %s, OS_msg = %s\n",interpret_result(connect_with_timeout(fd, (struct sockaddr *)&addr_s, sizeof(addr_s), 5000)),strerror(errno));
    
 
     close(fd);
