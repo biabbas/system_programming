@@ -64,8 +64,8 @@ int main(int argc, char **argv) {
     tv.tv_sec = seconds;
     tv.tv_usec = 0;
 
-    //rc = select(fd + 1, NULL, &fdset, NULL, &tv);
-    rc=1;
+    rc = select(fd + 1, NULL, &fdset, NULL, &tv);
+    
     switch(rc) {
     case 1: // data to read
         len = sizeof(so_error);
